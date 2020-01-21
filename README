@@ -1,3 +1,177 @@
-> Space invaders
+-> Space invaders
 
 ~ My first project
+
+Code  explanation>
+
+# Importing pygame and random module and mixer from pygame and initializing
+
+import pygame
+import random
+from pygame import mixer
+pygame.init()
+
+# --------------------------------------------------------------------------
+pygame.display.set_caption("Space Invaders")                    #setting title of the game
+icon = pygame.image.load("space-invaders.png")                  #loading icon
+pygame.display.set_icon(icon)                                   #setting icon
+screen = pygame.display.set_mode((600, 600))                    #box size
+
+#setting font
+pygame.font.init()
+my_font = pygame.font.Font('freesansbold.ttf', 30)
+# ----------------------------------------------------
+score_val = 0                                                   #initial score
+
+# initialising a list of enemy UFO and send number of enemies manually:
+ufo = []
+ufo_x = []
+ufo_y = []
+ufo_y_change = []
+ufo_x_change = []
+num_of_enemies = 3
+
+for i in range(num_of_enemies):
+    ufo.append(pygame.image.load("ufo.png"))
+    ufo_x.append(random.randint(0, 600))                        #generate random numbers as x and y within the specified range
+    ufo_y.append(random.randint(0, 100))
+    ufo_x_change.append(1)
+    ufo_y_change.append(5)
+
+# Initialzing the player (starting x and y) and image
+player = pygame.image.load("space-invaders.png")
+player_x = 220
+player_y = 570
+player_x_change = 0
+player_y_change = 0
+
+# bullets
+
+bullet = pygame.image.load("bullet.png")
+bullet_x = player_x - 100
+bullet_y = player_y - 10
+bullet_x_change = 0
+bullet_y_change = -5                                            #bullet speed
+
+background = pygame.image.load("space.png")                     
+running = True
+i = 0
+my_font2 = pygame.font.Font('freesansbold.ttf', 40)             #default font : freesansbold.ttf
+
+
+#function to generate end screen once player loses
+def game_over_foo():                                            
+    final_score = my_font2.render("Final score: " + str(score_val), True, (255, 255, 255))      #string, visibility, colour
+    screen.blit(final_score, (150, 200))                                                        #blit the text
+
+
+#function to print score during the game
+def my_score(): 
+    score = my_font.render("score : " + str(score_val), True,  (255, 255, 255))
+    screen.blit(score, (10, 10))
+
+# function to move the ufo
+def ufo_move(x, y):
+    screen.blit(ufo[i], (x, y))
+
+#function to move player
+def player_move(x, y):
+    screen.blit(player, (x, y))
+
+#function to move bullets
+def bullets_move(x, y):
+    screen.blit(bullet, (x, y))
+
+
+bullet_morn = False                                             #bullet moving or not
+player_left = False                                             #flag to check if left key is pressed
+player_right = False                                            #flag to check if right key is pressed
+
+while running:                                                  #game loop
+    screen.blit(background, (0, 0))                             #set background
+    screen.blit(bullet, (bullet_x, bullet_y))                   #set bullet
+    screen.blit(player, (player_x, player_y))                   #set player
+    
+    #for loop to blit ufos on screen
+    for i in range(num_of_enemies):                             
+        screen.blit(ufo[i], (ufo_x[i], ufo_y[i]))
+        
+    #getting event
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                bullet_morn = True                              #bullet moving when space is pressed   
+            #sets respective flag if left or right is pressed
+            if event.key == pygame.K_LEFT:
+                player_left = True
+            if event.key == pygame.K_RIGHT:
+                player_right = True
+        if event.type == pygame.KEYUP:                          #reset flags when keys are released
+            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                player_left = False
+                player_right = False
+
+    # player------------------------------
+    if player_right:
+        player_x_change = 2
+    elif player_left:
+        player_x_change = -2
+    else:
+        player_x_change = 0
+
+    if 570 >= player_x + player_x_change >= 0:                  #change player location when player is within the screen range
+        player_x += player_x_change
+        player_move(player_x, player_y)
+
+    # ufo --------------------------------
+
+    for i in range(num_of_enemies):                             #move each ufo
+        if 570 <= ufo_x[i]:                                     #move ufo little below and reverse direction                              
+            ufo_x_change[i] = -1
+            ufo_y_change[i] = 20
+        elif ufo_x[i] <= 0:                                     
+            ufo_x_change[i] = 1
+            ufo_y_change[i] = 5
+        elif 5 < ufo_x[i] < 590:                                #dont move down if ufo is within linit
+            ufo_y_change[i] = 0
+
+        ufo_x[i] += ufo_x_change[i]
+        ufo_y[i] += ufo_y_change[i]
+        ufo_move(ufo_x[i], ufo_y[i])
+        if ufo_y[i] >= 530:                                     #if ufo reaches lowest layer
+            for j in range(num_of_enemies):                     #send all ufo on 2000, 2000
+                ufo_x[j] = 2000
+                ufo_y[j] = 2000 
+                game_over_foo()                                 #display game over screen
+
+        if bullet_x - 20 <= ufo_x[i] <= bullet_x + 20:          #condition for checking if bullet hits ufo
+            if bullet_y - 20 <= ufo_y[i] <= bullet_y + 20:
+                (ufo_x[i], ufo_y[i]) = (random.randint(0, 600), random.randint(0, 100))         #set new location for ufo
+                score_val += 1
+                bullet_y = player_y
+                bullet_morn = False                              #remove bullet (put is back to player do i bullet dont hit multiple
+                # explosion sound--------------------------------------------
+                hit_sound = mixer.music.load("explosion.wav")   #play sound
+                mixer.music . play()
+
+    # bullet -------------------------------
+    if bullet_morn:                                             #if bullet is moving, decrease y and if bullet and player 
+        if bullet_y == player_y - 10:                           #are at same spot play shoot sound
+            shoot_sound = mixer.music.load("shoot.wav")
+            mixer.music.play()
+        bullet_y += bullet_y_change
+
+    if bullet_y == 0:                                           #if bullet reaches top, moving = false and send it back to player
+        bullet_morn = False
+        bullet_x = player_x
+        bullet_y = player_y
+
+    if not bullet_morn:                                         #if not moving keep it moving with player
+        bullet_x = player_x+8
+        bullet_y = player_y
+
+    bullets_move(bullet_x, bullet_y)                            
+    my_score()                                                  
+    pygame.display.update()                                     #keep updating screen
