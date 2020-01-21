@@ -40,7 +40,7 @@ bullet_y = player_y - 10
 bullet_x_change = 0
 bullet_y_change = -5
 
-background = pygame.image.load("155.jpg")
+background = pygame.image.load("space.png")
 running = True
 i = 0
 my_font2 = pygame.font.Font('freesansbold.ttf', 40)
@@ -71,7 +71,6 @@ def bullets_move(x, y):
 bullet_morn = False
 player_left = False
 player_right = False
-end_score = 0
 
 while running:
     screen.blit(background, (0, 0))
@@ -109,7 +108,7 @@ while running:
     # ufo --------------------------------
 
     for i in range(num_of_enemies):
-        if 570 <= ufo_x[i] < 1500:
+        if 570 <= ufo_x[i]:
             ufo_x_change[i] = -1
             ufo_y_change[i] = 20
         elif ufo_x[i] <= 0:
